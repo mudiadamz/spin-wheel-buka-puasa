@@ -274,16 +274,26 @@ export function SpinWheel({ items, onSpinComplete }: SpinWheelProps) {
             <circle cx={CX} cy={CY} r="24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="1" />
           </svg>
 
-          {/* SPIN button */}
+          {/* Center tap area */}
           <button
             onClick={spin}
             disabled={isSpinning}
-            className="absolute left-1/2 top-1/2 z-20 flex h-[56px] w-[56px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-gradient-to-b from-yellow-400 via-amber-500 to-amber-700 text-sm font-extrabold tracking-wider text-white shadow-[0_2px_8px_rgba(0,0,0,0.4)] ring-2 ring-yellow-300/50 transition hover:from-yellow-300 hover:to-amber-600 disabled:cursor-not-allowed disabled:opacity-70"
+            className="absolute left-1/2 top-1/2 z-20 flex h-[56px] w-[56px] -translate-x-1/2 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-gradient-to-b from-yellow-400 via-amber-500 to-amber-700 text-[10px] font-extrabold tracking-wider text-white shadow-[0_2px_8px_rgba(0,0,0,0.4)] ring-2 ring-yellow-300/50 transition hover:from-yellow-300 hover:to-amber-600 disabled:cursor-not-allowed disabled:opacity-70"
+            aria-label="Spin"
           >
-            {isSpinning ? "..." : "SPIN"}
+            {isSpinning ? "..." : "▶"}
           </button>
         </div>
       </div>
+
+      {/* Primary SPIN button */}
+      <button
+        onClick={spin}
+        disabled={isSpinning}
+        className="animate-spin-pulse mt-5 rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 px-12 py-4 text-lg font-extrabold uppercase tracking-widest text-white shadow-xl transition-all hover:scale-105 hover:from-amber-400 hover:via-orange-400 hover:to-red-400 active:scale-95 disabled:animate-none disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        {isSpinning ? "Spinning..." : "🎰 SPIN!"}
+      </button>
 
       {result && (
         <>

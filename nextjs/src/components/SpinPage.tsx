@@ -62,11 +62,11 @@ export function SpinPage() {
 
       <SpinWheel items={items} onSpinComplete={handleSpinComplete} />
 
-      <div className="mt-6 flex w-full flex-col items-center gap-3">
-        <div className="flex items-center gap-3">
+      <div className="mt-4 flex w-full flex-col items-center gap-2 opacity-80">
+        <div className="flex items-center gap-2">
           <button
             onClick={refreshFoods}
-            className="flex items-center gap-2 rounded-full border-2 border-amber-300 bg-amber-50 px-4 py-2.5 text-sm font-medium text-amber-800 transition hover:bg-amber-100"
+            className="flex items-center gap-1.5 rounded-full border border-amber-300/70 bg-amber-50/60 px-3 py-1.5 text-xs text-amber-700 transition hover:bg-amber-100"
           >
             🔄 Refresh
           </button>
@@ -75,29 +75,29 @@ export function SpinPage() {
             <select
               value={selectedCuisine}
               onChange={(e) => handleCuisineChange(e.target.value as Cuisine | "all")}
-              className="appearance-none rounded-full border-2 border-emerald-300 bg-emerald-50 py-2.5 pl-4 pr-8 text-sm font-medium text-emerald-800 transition hover:bg-emerald-100 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+              className="appearance-none rounded-full border border-emerald-300/70 bg-emerald-50/60 py-1.5 pl-3 pr-7 text-xs text-emerald-700 transition hover:bg-emerald-100 focus:outline-none focus:ring-1 focus:ring-emerald-400"
             >
               <option value="all">Semua Cuisine</option>
               {CUISINE_OPTIONS.map(([key, label]) => (
                 <option key={key} value={key}>{label}</option>
               ))}
             </select>
-            <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-emerald-600">
+            <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-emerald-500">
               ▾
             </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-emerald-700/70">Pilihan:</span>
+        <div className="flex items-center gap-1.5">
+          <span className="text-[10px] text-emerald-700/60">Item:</span>
           {WHEEL_SIZES.map((size) => (
             <button
               key={size}
               onClick={() => handleWheelSizeChange(size)}
-              className={`h-8 w-8 rounded-full text-xs font-semibold transition ${
+              className={`h-6 w-6 rounded-full text-[10px] font-semibold transition ${
                 wheelSize === size
-                  ? "bg-amber-500 text-white shadow"
-                  : "border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100"
+                  ? "bg-amber-500 text-white shadow-sm"
+                  : "border border-amber-200 bg-amber-50/50 text-amber-700 hover:bg-amber-100"
               }`}
             >
               {size}
