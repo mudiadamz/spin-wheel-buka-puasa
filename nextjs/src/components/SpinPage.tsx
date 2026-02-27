@@ -3,7 +3,6 @@
 import { useCallback, useState } from "react";
 import { SpinWheel } from "./SpinWheel";
 import {
-  getInitialItems,
   shuffleAndPick,
   CUISINE_LABELS,
   type FoodItem,
@@ -15,10 +14,17 @@ const CUISINE_OPTIONS = Object.entries(CUISINE_LABELS) as [Cuisine, string][];
 
 const WHEEL_SIZES = [4, 6, 8, 10, 12];
 
+function pickRandomCuisine(): Cuisine {
+  const keys = CUISINE_OPTIONS.map(([k]) => k);
+  return keys[Math.floor(Math.random() * keys.length)];
+}
+
+const INITIAL_CUISINE = pickRandomCuisine();
+
 export function SpinPage() {
   const [wheelSize, setWheelSize] = useState(8);
-  const [items, setItems] = useState<FoodItem[]>(() => getInitialItems(wheelSize));
-  const [selectedCuisine, setSelectedCuisine] = useState<Cuisine | "all">("all");
+  const [selectedCuisine, setSelectedCuisine] = useState<Cuisine | "all">(INITIAL_CUISINE);
+  const [items, setItems] = useState<FoodItem[]>(() => shuffleAndPick(8, INITIAL_CUISINE));
 
   const refreshFoods = useCallback(() => {
     playRefresh();
@@ -38,6 +44,12 @@ export function SpinPage() {
     setItems(shuffleAndPick(size, selectedCuisine === "all" ? undefined : selectedCuisine));
   }, [selectedCuisine]);
 
+  const handleSpinComplete = useCallback(() => {
+    const next = pickRandomCuisine();
+    setSelectedCuisine(next);
+    setItems(shuffleAndPick(wheelSize, next));
+  }, [wheelSize]);
+
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col items-center px-4 py-6">
       <div className="mb-4 flex items-center justify-center gap-2">
@@ -48,7 +60,7 @@ export function SpinPage() {
         <span className="text-amber-400/60 text-lg">⭐</span>
       </div>
 
-      <SpinWheel items={items} />
+      <SpinWheel items={items} onSpinComplete={handleSpinComplete} />
 
       <div className="mt-6 flex w-full flex-col items-center gap-3">
         <div className="flex items-center gap-3">

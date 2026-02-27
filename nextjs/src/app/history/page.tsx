@@ -29,9 +29,14 @@ export default function HistoryPage() {
               className="flex items-center justify-between rounded-xl border border-amber-200 bg-white px-4 py-3 shadow-sm"
             >
               <div>
-                <span className="font-semibold text-emerald-800">
-                  {item.result.emoji} {item.result.name}
-                </span>
+                <a
+                  href={`https://www.google.com/search?q=${encodeURIComponent(item.result.name + " food")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-emerald-800 hover:text-blue-600 transition"
+                >
+                  {item.result.emoji} {item.result.name} <span className="text-xs opacity-50">🔍</span>
+                </a>
                 <p className="text-xs text-emerald-600/70">
                   {item.result.category}
                 </p>

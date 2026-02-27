@@ -83,7 +83,15 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                     key={item.id}
                     className="rounded-lg bg-white/10 px-3 py-2 text-sm"
                   >
-                    <span className="font-medium">{item.result.emoji} {item.result.name}</span>
+                    <a
+                      href={`https://www.google.com/search?q=${encodeURIComponent(item.result.name + " food")}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between gap-2 hover:text-amber-300 transition"
+                    >
+                      <span className="font-medium">{item.result.emoji} {item.result.name}</span>
+                      <span className="text-xs opacity-60">🔍</span>
+                    </a>
                     <p className="text-xs text-white/70">
                       {new Date(item.timestamp).toLocaleString("id-ID")}
                     </p>

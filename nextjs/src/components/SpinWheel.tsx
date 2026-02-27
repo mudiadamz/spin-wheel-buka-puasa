@@ -315,12 +315,26 @@ export function SpinWheel({ items, onSpinComplete }: SpinWheelProps) {
               {CUISINE_LABELS[result.cuisine]} · {result.category === "main" ? "Main Course" : result.category === "side" ? "Side Dish" : result.category === "dessert" ? "Dessert" : "Minuman"}
             </p>
 
-            <button
-              onClick={() => setResult(null)}
-              className="mt-5 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-8 py-2.5 text-sm font-bold text-white shadow-lg transition hover:from-amber-400 hover:to-amber-500"
-            >
-              OK
-            </button>
+            {result.desc && (
+              <p className="mt-3 text-xs leading-relaxed text-gray-600">{result.desc}</p>
+            )}
+
+            <div className="mt-4 flex items-center justify-center gap-3">
+              <a
+                href={`https://www.google.com/search?q=${encodeURIComponent(result.name + " food")}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-full border-2 border-blue-300 bg-blue-50 px-5 py-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-100"
+              >
+                🔍 Cari di Google
+              </a>
+              <button
+                onClick={() => setResult(null)}
+                className="rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-6 py-2 text-sm font-bold text-white shadow-lg transition hover:from-amber-400 hover:to-amber-500"
+              >
+                OK
+              </button>
+            </div>
           </div>
         </>
       )}
