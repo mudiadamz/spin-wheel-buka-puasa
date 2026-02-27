@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { SpinWheel } from "./SpinWheel";
 import {
   shuffleAndPick,
@@ -9,6 +9,7 @@ import {
   type Cuisine,
 } from "@/data/foods";
 import { playRefresh } from "@/lib/sounds";
+import { recordVisit, recordSpin } from "@/lib/storage";
 
 const CUISINE_OPTIONS = Object.entries(CUISINE_LABELS) as [Cuisine, string][];
 
@@ -25,6 +26,14 @@ export function SpinPage() {
   const [wheelSize, setWheelSize] = useState(8);
   const [selectedCuisine, setSelectedCuisine] = useState<Cuisine | "all">(INITIAL_CUISINE);
   const [items, setItems] = useState<FoodItem[]>(() => shuffleAndPick(8, INITIAL_CUISINE));
+  const [totalSpins, setTotalSpins] = useState(0);
+  const [totalVisits, setTotalVisits] = useState(0);
+
+  useEffect(() => {
+    const stats = recordVisit();
+    setTotalSpins(stats.totalSpins);
+    setTotalVisits(stats.totalVisits);
+  }, []);
 
   const refreshFoods = useCallback(() => {
     playRefresh();
@@ -45,6 +54,8 @@ export function SpinPage() {
   }, [selectedCuisine]);
 
   const handleSpinComplete = useCallback(() => {
+    const stats = recordSpin();
+    setTotalSpins(stats.totalSpins);
     const next = pickRandomCuisine();
     setSelectedCuisine(next);
     setItems(shuffleAndPick(wheelSize, next));
@@ -103,6 +114,18 @@ export function SpinPage() {
               {size}
             </button>
           ))}
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className="mt-6 flex items-center justify-center gap-4">
+        <div className="flex flex-col items-center rounded-xl border border-amber-200/60 bg-amber-50/40 px-4 py-2">
+          <span className="text-lg font-extrabold text-amber-600">{totalVisits}</span>
+          <span className="text-[10px] text-amber-700/70">Hari Kunjungan</span>
+        </div>
+        <div className="flex flex-col items-center rounded-xl border border-emerald-200/60 bg-emerald-50/40 px-4 py-2">
+          <span className="text-lg font-extrabold text-emerald-600">{totalSpins}</span>
+          <span className="text-[10px] text-emerald-700/70">Total Spin</span>
         </div>
       </div>
     </main>

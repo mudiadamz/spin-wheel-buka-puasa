@@ -38,3 +38,49 @@ export function clearSpinHistory(): void {
   if (typeof window === "undefined") return;
   localStorage.removeItem(STORAGE_KEY);
 }
+
+const STATS_KEY = "spin-wheel-stats";
+
+interface SiteStats {
+  totalSpins: number;
+  totalVisits: number;
+  lastVisit: string;
+}
+
+function getStats(): SiteStats {
+  if (typeof window === "undefined") return { totalSpins: 0, totalVisits: 0, lastVisit: "" };
+  try {
+    const data = localStorage.getItem(STATS_KEY);
+    if (!data) return { totalSpins: 0, totalVisits: 0, lastVisit: "" };
+    return JSON.parse(data) as SiteStats;
+  } catch {
+    return { totalSpins: 0, totalVisits: 0, lastVisit: "" };
+  }
+}
+
+function saveStats(stats: SiteStats): void {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(STATS_KEY, JSON.stringify(stats));
+}
+
+export function recordVisit(): SiteStats {
+  const stats = getStats();
+  const today = new Date().toISOString().slice(0, 10);
+  if (stats.lastVisit !== today) {
+    stats.totalVisits += 1;
+    stats.lastVisit = today;
+    saveStats(stats);
+  }
+  return stats;
+}
+
+export function recordSpin(): SiteStats {
+  const stats = getStats();
+  stats.totalSpins += 1;
+  saveStats(stats);
+  return stats;
+}
+
+export function getSiteStats(): SiteStats {
+  return getStats();
+}
