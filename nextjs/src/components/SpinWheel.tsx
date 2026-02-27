@@ -2,7 +2,9 @@
 
 import { useCallback, useRef, useState } from "react";
 import type { FoodItem } from "@/data/foods";
+import { CUISINE_LABELS } from "@/data/foods";
 import { addSpinHistory } from "@/lib/storage";
+import { playTick, playWin } from "@/lib/sounds";
 
 const SEGMENT_COLORS = [
   "#e74c3c", "#27ae60", "#2980b9", "#8e44ad", "#f39c12",
@@ -40,11 +42,13 @@ export function SpinWheel({ items, onSpinComplete }: SpinWheelProps) {
   const [isSpinning, setIsSpinning] = useState(false);
   const [result, setResult] = useState<FoodItem | null>(null);
   const rotationRef = useRef(0);
+  const lastTickSegRef = useRef(-1);
 
   const spin = useCallback(() => {
     if (isSpinning || items.length === 0) return;
     setIsSpinning(true);
     setResult(null);
+    lastTickSegRef.current = -1;
 
     const segmentAngle = 360 / items.length;
     const randomIndex = Math.floor(Math.random() * items.length);
@@ -61,10 +65,17 @@ export function SpinWheel({ items, onSpinComplete }: SpinWheelProps) {
       rotationRef.current = newRotation;
       setRotation(newRotation);
 
+      const currentSeg = Math.floor(((newRotation % 360) + 360) % 360 / segmentAngle);
+      if (currentSeg !== lastTickSegRef.current) {
+        lastTickSegRef.current = currentSeg;
+        playTick();
+      }
+
       if (progress < 1) {
         requestAnimationFrame(animate);
       } else {
         const winner = items[randomIndex];
+        playWin();
         setResult(winner);
         setIsSpinning(false);
         addSpinHistory({
@@ -142,14 +153,27 @@ export function SpinWheel({ items, onSpinComplete }: SpinWheelProps) {
               const midAngle = startAngle + seg / 2;
               const color = SEGMENT_COLORS[i % SEGMENT_COLORS.length];
 
-              const maxLen = items.length <= 6 ? 10 : items.length <= 10 ? 9 : 7;
-              const name = item.name.length > maxLen
-                ? item.name.slice(0, maxLen - 1) + "…"
-                : item.name;
+              const lineMax = items.length <= 6 ? 7 : 5;
+              const words = item.name.split(" ");
+              let line1 = "";
+              let line2 = "";
+              for (const w of words) {
+                if (!line1 || (line1 + " " + w).length <= lineMax) {
+                  line1 = line1 ? line1 + " " + w : w;
+                } else if (!line2 || (line2 + " " + w).length <= lineMax) {
+                  line2 = line2 ? line2 + " " + w : w;
+                }
+              }
+              if (line1.length > lineMax) line1 = line1.slice(0, lineMax - 1) + "…";
+              if (line2.length > lineMax) line2 = line2.slice(0, lineMax - 1) + "…";
+              const hasTwo = line2.length > 0;
 
               const textR = WHEEL_R * 0.55;
               const emojiR = WHEEL_R * 0.85;
               const isBottomHalf = midAngle > 90 && midAngle < 270;
+              const fs = items.length <= 6 ? 8 : 7;
+              const lineGap = fs + 1;
+              const localRot = isBottomHalf ? -90 : 90;
 
               return (
                 <g key={item.id}>
@@ -161,52 +185,67 @@ export function SpinWheel({ items, onSpinComplete }: SpinWheelProps) {
                   />
 
                   <g transform={`rotate(${midAngle} ${CX} ${CY})`}>
-                    {/* Emoji near outer edge - counter-rotated to stay upright */}
                     {item.emoji && (
                       <text
                         x={CX}
                         y={CY - emojiR}
                         textAnchor="middle"
                         dominantBaseline="central"
-                        fontSize="14"
+                        fontSize="11"
                         transform={`rotate(${-midAngle} ${CX} ${CY - emojiR})`}
                       >
                         {item.emoji}
                       </text>
                     )}
 
-                    {/* Food name - radial, flipped in bottom half for readability */}
-                    {isBottomHalf ? (
-                      <text
-                        x={CX}
-                        y={CY - textR}
-                        textAnchor="middle"
-                        dominantBaseline="central"
-                        fontSize="11"
-                        fontWeight="bold"
-                        fill="white"
-                        stroke="rgba(0,0,0,0.4)"
-                        strokeWidth="2.5"
-                        paintOrder="stroke"
-                        transform={`rotate(-90 ${CX} ${CY - textR})`}
-                      >
-                        {name}
-                      </text>
+                    {hasTwo ? (
+                      <>
+                        <text
+                          x={CX}
+                          y={CY - textR - lineGap / 2}
+                          textAnchor="middle"
+                          dominantBaseline="central"
+                          fontSize={fs}
+                          fontWeight="bold"
+                          fill="white"
+                          stroke="rgba(0,0,0,0.4)"
+                          strokeWidth="2"
+                          paintOrder="stroke"
+                          transform={`rotate(${localRot} ${CX} ${CY - textR - lineGap / 2})`}
+                        >
+                          {line1}
+                        </text>
+                        <text
+                          x={CX}
+                          y={CY - textR + lineGap / 2}
+                          textAnchor="middle"
+                          dominantBaseline="central"
+                          fontSize={fs}
+                          fontWeight="bold"
+                          fill="white"
+                          stroke="rgba(0,0,0,0.4)"
+                          strokeWidth="2"
+                          paintOrder="stroke"
+                          transform={`rotate(${localRot} ${CX} ${CY - textR + lineGap / 2})`}
+                        >
+                          {line2}
+                        </text>
+                      </>
                     ) : (
                       <text
                         x={CX}
                         y={CY - textR}
                         textAnchor="middle"
                         dominantBaseline="central"
-                        fontSize="11"
+                        fontSize={fs}
                         fontWeight="bold"
                         fill="white"
                         stroke="rgba(0,0,0,0.4)"
-                        strokeWidth="2.5"
+                        strokeWidth="2"
                         paintOrder="stroke"
-                        transform={`rotate(90 ${CX} ${CY - textR})`}
+                        transform={`rotate(${localRot} ${CX} ${CY - textR})`}
                       >
-                        {name}
+                        {line1}
                       </text>
                     )}
                   </g>
@@ -247,12 +286,43 @@ export function SpinWheel({ items, onSpinComplete }: SpinWheelProps) {
       </div>
 
       {result && (
-        <div className="animate-fade-in rounded-xl border-2 border-amber-200 bg-amber-50 px-6 py-4 text-center shadow-lg">
-          <p className="text-amber-800">Selamat! Kamu dapat:</p>
-          <p className="text-xl font-bold text-amber-700">
-            {result.emoji} {result.name}
-          </p>
-        </div>
+        <>
+          {/* Overlay backdrop */}
+          <div
+            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
+            onClick={() => setResult(null)}
+          />
+
+          {/* Popup */}
+          <div className="animate-popup-in fixed left-1/2 top-1/2 z-50 w-[85vw] max-w-xs -translate-x-1/2 -translate-y-1/2 rounded-2xl border-2 border-amber-300 bg-gradient-to-b from-amber-50 to-white p-6 text-center shadow-2xl animate-pulse-glow">
+            {/* Confetti particles */}
+            <div className="pointer-events-none absolute inset-x-0 -top-2 flex justify-center gap-3">
+              {["🎉", "⭐", "✨", "🎊", "🌙"].map((c, i) => (
+                <span
+                  key={i}
+                  className="animate-confetti text-lg"
+                  style={{ animationDelay: `${i * 0.15}s` }}
+                >
+                  {c}
+                </span>
+              ))}
+            </div>
+
+            <p className="mb-1 text-sm text-amber-600/80">Menu berbuka hari ini</p>
+            <p className="text-4xl">{result.emoji}</p>
+            <p className="mt-2 text-xl font-extrabold text-amber-800">{result.name}</p>
+            <p className="mt-1 text-xs text-emerald-600">
+              {CUISINE_LABELS[result.cuisine]} · {result.category === "main" ? "Main Course" : result.category === "side" ? "Side Dish" : result.category === "dessert" ? "Dessert" : "Minuman"}
+            </p>
+
+            <button
+              onClick={() => setResult(null)}
+              className="mt-5 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-8 py-2.5 text-sm font-bold text-white shadow-lg transition hover:from-amber-400 hover:to-amber-500"
+            >
+              OK
+            </button>
+          </div>
+        </>
       )}
     </div>
   );

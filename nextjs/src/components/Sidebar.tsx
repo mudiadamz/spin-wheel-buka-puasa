@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { getSpinHistory, type SpinHistoryItem } from "@/lib/storage";
 
 interface SidebarProps {
@@ -9,20 +10,22 @@ interface SidebarProps {
   onClose: () => void;
 }
 
+const menuItems = [
+  { href: "/", label: "Home", icon: "🏠" },
+  { href: "/history", label: "History Spin", icon: "📜" },
+  { href: "/about", label: "About", icon: "ℹ️" },
+  { href: "/contact", label: "Contact", icon: "📬" },
+  { href: "/privacy", label: "Privacy Policy", icon: "🔒" },
+  { href: "/jadwal", label: "30 Hari Jadwal Berbuka", icon: "📅" },
+];
+
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const [history, setHistory] = useState<SpinHistoryItem[]>([]);
+  const pathname = usePathname();
 
   useEffect(() => {
-    setHistory(getSpinHistory());
+    if (isOpen) setHistory(getSpinHistory());
   }, [isOpen]);
-
-  const menuItems = [
-    { href: "#history", label: "History Spin" },
-    { href: "#about", label: "About" },
-    { href: "#contact", label: "Contact" },
-    { href: "#privacy", label: "Privacy Policy" },
-    { href: "#jadwal", label: "30 Hari Jadwal Berbuka" },
-  ];
 
   return (
     <>
@@ -49,25 +52,33 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           </div>
 
           <nav className="space-y-1">
-            {menuItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={onClose}
-                className="block rounded-lg px-3 py-2 hover:bg-white/10"
-              >
-                {item.label}
-              </Link>
-            ))}
+            {menuItems.map((item) => {
+              const isActive = pathname === item.href;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={onClose}
+                  className={`flex items-center gap-3 rounded-lg px-3 py-2.5 transition ${
+                    isActive
+                      ? "bg-white/20 font-semibold"
+                      : "hover:bg-white/10"
+                  }`}
+                >
+                  <span className="text-base">{item.icon}</span>
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
           </nav>
 
           <div className="mt-6 flex-1 overflow-auto">
-            <h3 className="mb-2 font-semibold">History Spin</h3>
+            <h3 className="mb-2 font-semibold">History Terbaru</h3>
             {history.length === 0 ? (
               <p className="text-sm text-white/70">Belum ada history</p>
             ) : (
               <ul className="space-y-2">
-                {history.slice(0, 20).map((item) => (
+                {history.slice(0, 10).map((item) => (
                   <li
                     key={item.id}
                     className="rounded-lg bg-white/10 px-3 py-2 text-sm"
@@ -79,6 +90,15 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                   </li>
                 ))}
               </ul>
+            )}
+            {history.length > 0 && (
+              <Link
+                href="/history"
+                onClick={onClose}
+                className="mt-3 block text-center text-xs text-amber-300 hover:text-amber-200"
+              >
+                Lihat semua history →
+              </Link>
             )}
           </div>
         </div>

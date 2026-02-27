@@ -209,8 +209,9 @@ export function getRandomFoods(): FoodItem[] {
   return [byCat("main"), byCat("side"), byCat("dessert"), byCat("drink")];
 }
 
-export function shuffleAndPick(count: number = 8): FoodItem[] {
-  const shuffled = [...ALL_FOODS].sort(() => Math.random() - 0.5);
+export function shuffleAndPick(count: number = 8, cuisine?: Cuisine): FoodItem[] {
+  const pool = cuisine ? getFoodsByCuisine(cuisine) : ALL_FOODS;
+  const shuffled = [...pool].sort(() => Math.random() - 0.5);
   return shuffled.slice(0, Math.min(count, shuffled.length));
 }
 
